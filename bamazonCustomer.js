@@ -1,5 +1,6 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
+const Table = require("cli-table");
 
 const connection = mysql.createConnection({
     host: "localhost",
@@ -19,10 +20,15 @@ function startCustomer(){
     console.log("Welcome to Bamazon!  Please browse our inventory below:");
     connection.query("SELECT * FROM products", function (err, results){
         if (err) throw err;
+        let table = new Table({
+            head: [ "Product ID", "Product Name", "Price $", "Units Available", "Department" ],
+            colWidths: [15, 40, 15, 20, 30]
+        });
         console.log("-----------------------------------------");
         for (let i=0;  i<results.length; i++) {
-            console.log("Product ID: " + results[i].item_id + ",    " + results[i].product_name + ",   Price: $" + results[i].price + ",    Units Available: " + results[i].stock_quantity + ",    Department: " + results[i].department_name);
+            table.push([results[i].item_id, results[i].product_name, results[i].price, results[i].stock_quantity, results[i].department_name]);
         }
+        console.log(table.toString());
         console.log("-----------------------------------------");
         inquirer
             .prompt([
@@ -54,6 +60,10 @@ function startCustomer(){
 
                     let quantity_num = parseInt(answer.quantity); 
                     let new_quantity = chosenItem.stock_quantity - answer.quantity;
+                    let itemTotal = chosenItem.price * answer.quantity;
+                    let updated_sales = chosenItem.product_sales + itemTotal;
+                    let itemCOGS = chosenItem.unit_cost * answer.quantity;
+                    let updated_COGS = chosenItem.product_cogs + itemCOGS;
 
                     console.log("---------------------------\nYou have selected " + quantity_num + " units of " + chosenItem.product_name + ".\n---------------------------");
                     inquirer
@@ -70,15 +80,17 @@ function startCustomer(){
 
                             if ( chosenItem.stock_quantity >=  quantity_num ) {
                                 connection.query(
-                                    "UPDATE products SET ? WHERE ?",
+                                    "UPDATE products SET ?, ?, ? WHERE ?",
                                     [
                                         { stock_quantity:  new_quantity },
+                                        { product_sales:  updated_sales},
+                                        { product_cogs:  updated_COGS},
                                         { item_id: chosenItem.item_id }
                                     ],
                                     function (error) {
                                         if (error) throw err;
                                         console.log("\n------------------------------\nPurchase successful.");
-                                        let itemTotal = chosenItem.price * answer.quantity;
+                                        // let itemTotal = chosenItem.price * answer.quantity;
                                         console.log("Cost of purchase was: $" + itemTotal + "\n----------------------------------");
                                         exitOption();
                                     }

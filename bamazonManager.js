@@ -1,5 +1,6 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
+const Table = require("cli-table");
 
 const connection = mysql.createConnection({
     host: "localhost",
@@ -45,10 +46,15 @@ function viewProducts(){
     console.log("Welcome to Bamazon Manager Inventory View:");
     connection.query("SELECT * FROM products", function (err, results){
         if (err) throw err;
+        let table = new Table({
+            head: [ "Product ID", "Product Name", "Price $", "Units Available", "Department" ],
+            colWidths: [15, 40, 15, 20, 30]
+        });
         console.log("-----------------------------------------");
         for (let i=0;  i<results.length; i++) {
-            console.log("Product ID: " + results[i].item_id + ",    " + results[i].product_name + ",   Price: $" + results[i].price + ",    Units Available: " + results[i].stock_quantity + ",    Department: " + results[i].department_name);
+            table.push([results[i].item_id, results[i].product_name, results[i].price, results[i].stock_quantity, results[i].department_name]);
         }
+        console.log(table.toString());
         console.log("-----------------------------------------");
         exitOption();
     })
@@ -56,12 +62,17 @@ function viewProducts(){
 
 
 function lowInventory() {
-    connection.query("SELECT * FROM products WHERE stock_quantity <10", function (err, results) {
+    connection.query("SELECT * FROM products WHERE stock_quantity <5", function (err, results) {
         if (err) throw err;
+        let table = new Table({
+            head: [ "Product ID", "Product Name", "Price $", "Units Available", "Department" ],
+            colWidths: [15, 40, 15, 20, 30]
+        });
         console.log("\n-----------------------------------------");
         for (let i=0;  i<results.length; i++) {
-            console.log("Product ID: " + results[i].item_id + ",    " + results[i].product_name + ",   Price: $" + results[i].price + ",    Units Available: " + results[i].stock_quantity + ",    Department: " + results[i].department_name);
+            table.push([results[i].item_id, results[i].product_name, results[i].price, results[i].stock_quantity, results[i].department_name]);
         }
+        console.log(table.toString());
         console.log("-----------------------------------------");
         exitOption();
     })
@@ -144,46 +155,65 @@ function addInventory(){
 
 
 function addNewProduct(){
-    inquirer
-        .prompt([
-            {
-                name: 'product_name',
-                type: 'input',
-                message: 'Enter the product name: '
-            },
-            {
-                name: 'department_name',
-                type: 'input',
-                message: 'Enter the department product should be under: '
-            },
-            {
-                name: 'price',
-                type: 'input',
-                message: 'Enter the retail price of the product: '
-            },
-            {
-                name: 'stock_quantity',
-                type: 'input',
-                message: 'Enter the initial number of units in inventory: '
-            }
-        ])
-        .then( function (answer){
-            let price_num = parseInt(answer.price);
-            let quantity_num = parseInt(answer.stock_quantity);
-
-            connection.query("INSERT INTO products SET ?",
+    connection.query("SELECT * FROM departments", function(err, results){
+        if(err) throw err;
+        inquirer
+            .prompt([
                 {
-                    product_name:  answer.product_name,
-                    department_name:  answer.department_name,
-                    price: price_num,
-                    stock_quantity:  quantity_num
+                    name: 'product_name',
+                    type: 'input',
+                    message: 'Enter the product name: '
                 },
-                function(err, response) {
-                    console.log(response.affectedRows + " product inserted.\n");
-                    exitOption();
+                {
+                    name: 'department_name',
+                    type: 'rawlist',
+                    message: 'Which department should this product be under: ',
+                    choices: function(){
+                        let choiceArray = [];
+                        for (let i=0; i<results.length; i++) {
+                            choiceArray.push(results[i].department_name);
+                        }
+                        return choiceArray;
+                    }
+                },
+                {
+                    name: 'price',
+                    type: 'input',
+                    message: 'Enter the retail price of the product: '
+                },
+                {
+                    name: 'stock_quantity',
+                    type: 'input',
+                    message: 'Enter the initial number of units in inventory: '
+                },
+                {
+                    name: 'unit_cost',
+                    type: 'input',
+                    message: 'Enter the wholesale cost per unit: '
                 }
-            )
+            ])
+            .then( function (answer){
+                let price_num = parseInt(answer.price);
+                let quantity_num = parseInt(answer.stock_quantity);
+                let cost_num = parseInt(answer.unit_cost);
 
+                connection.query("INSERT INTO products SET ?",
+                    {
+                        product_name:  answer.product_name,
+                        department_name:  answer.department_name,
+                        price: price_num,
+                        stock_quantity:  quantity_num,
+                        unit_cost: cost_num,
+                        product_sales: 0,
+                        product_cogs: 0
+                    },
+                    function(err, response) {
+                        console.log(response.affectedRows + " product inserted.\n");
+                        exitOption();
+                    }
+                )
+
+            })
         })
 }
 
