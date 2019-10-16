@@ -1,6 +1,10 @@
 # bamazon
 Bamazon is the result of a project used to teach students how to code using Node and MySQL.  
 
+Video to the App Working
+https://drive.google.com/file/d/1e-sCgUfp0-u6mUqTTwjQFfIQMFeVtbVX/view?usp=sharing
+If the link is not working, please see the mp4 in the github repository.
+
 
 The "schema" file shows the code used to create the initial tables in MySQL
 

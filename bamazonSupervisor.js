@@ -44,8 +44,8 @@ function viewProductSales(){
     connection.query(query, function (err, results){
         if (err) throw err;
         let table = new Table({
-            head: [ "Department ID", "Department Name", "Sales $", "COGS $", "Overhead Costs $", "Ops. Profit $", "Tax Provision $", "Net Income $" ],
-            colWidths: [15, 30, 15, 15, 20, 20, 20, 15]
+            head: [ "Dep ID", "Dep. Name", "Sales $", "COGS $", "Overhead $", "Ops. Profit $", "Tax Provision $", "Net Income $" ],
+            colWidths: [10, 20, 15, 15, 10, 20, 20, 15]
         });
         console.log("-----------------------------------------");
         for(let i=0; i<results.length; i++){
