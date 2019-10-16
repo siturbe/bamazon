@@ -3,7 +3,7 @@ Bamazon is the result of a project used to teach students how to code using Node
 
 Video to the App Working
 https://drive.google.com/file/d/1e-sCgUfp0-u6mUqTTwjQFfIQMFeVtbVX/view?usp=sharing
-If the link is not working, please see the mp4 in the github repository.
+If the mp4 file does not work directly form Github, you can click on the link above.  You may have to download the video to watch it.
 
 
 The "schema" file shows the code used to create the initial tables in MySQL
